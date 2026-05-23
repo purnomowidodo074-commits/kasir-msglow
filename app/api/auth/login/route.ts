@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Username atau password salah' }, { status: 401 })
   }
 
-  await createSession(user.id)
+  await createSession(user.id, user.role)
 
   return NextResponse.json({ user: { id: user.id, name: user.name, role: user.role } })
 }

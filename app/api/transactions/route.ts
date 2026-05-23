@@ -7,12 +7,17 @@ export async function GET(req: NextRequest) {
   if (error) return error
 
   const { searchParams } = new URL(req.url)
+  const all = searchParams.get('all') === 'true'
   const days = Number(searchParams.get('days') ?? 7)
-  const since = new Date()
-  since.setDate(since.getDate() - days)
+
+  const where = all ? {} : (() => {
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+    return { date: { gte: since } }
+  })()
 
   const transactions = await prisma.transaction.findMany({
-    where: { date: { gte: since } },
+    where,
     include: { items: true, cashier: { select: { name: true } } },
     orderBy: { date: 'desc' },
   })

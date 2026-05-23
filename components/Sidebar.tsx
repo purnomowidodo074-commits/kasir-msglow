@@ -6,6 +6,7 @@ import Image from 'next/image'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/transaksi', label: 'Transaksi', icon: '🛒' },
+  { href: '/history', label: 'Riwayat', icon: '🕒' },
   { href: '/stock', label: 'Stok Produk', icon: '📦', ownerOnly: true },
   { href: '/settings', label: 'Pengaturan', icon: '⚙️', ownerOnly: true },
   { href: '/users', label: 'Pengguna', icon: '👥', ownerOnly: true },

@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000 // 8 hours
 
-export async function createSession(userId: number) {
+export async function createSession(userId: number, role: string) {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS)
   const session = await prisma.session.create({
     data: { userId, expiresAt },
@@ -11,6 +11,14 @@ export async function createSession(userId: number) {
   const cookieStore = await cookies()
   cookieStore.set('session_id', session.id, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    expires: expiresAt,
+    path: '/',
+  })
+  // Cookie role untuk middleware (tidak httpOnly agar middleware Edge bisa baca)
+  cookieStore.set('user_role', role, {
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     expires: expiresAt,
@@ -43,5 +51,6 @@ export async function deleteSession() {
   if (sessionId) {
     await prisma.session.delete({ where: { id: sessionId } }).catch(() => {})
     cookieStore.delete('session_id')
+    cookieStore.delete('user_role')
   }
 }
