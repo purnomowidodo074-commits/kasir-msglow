@@ -21,6 +21,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (error) return error
 
   const { id } = await params
-  await prisma.product.delete({ where: { id: Number(id) } })
-  return NextResponse.json({ ok: true })
+
+  try {
+    await prisma.product.delete({ where: { id: Number(id) } })
+    return NextResponse.json({ ok: true })
+  } catch (e: unknown) {
+    // P2003 = foreign key constraint — produk punya riwayat transaksi
+    if (typeof e === 'object' && e !== null && 'code' in e && (e as { code: string }).code === 'P2003') {
+      return NextResponse.json(
+        { error: 'Produk tidak dapat dihapus karena memiliki riwayat transaksi.' },
+        { status: 409 }
+      )
+    }
+    throw e
+  }
 }

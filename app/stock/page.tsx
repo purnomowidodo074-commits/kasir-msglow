@@ -28,6 +28,7 @@ export default function StockPage() {
   const [form, setForm] = useState({ name: '', category: 'skincare', price: '', stock: '', imageUrl: '' })
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/products').then((r) => r.json()).then(setProducts)
@@ -75,7 +76,13 @@ export default function StockPage() {
 
   async function handleDelete(id: number) {
     if (!confirm('Hapus produk ini?')) return
-    await fetch(`/api/products/${id}`, { method: 'DELETE' })
+    setDeleteError(null)
+    const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setDeleteError(data.error ?? 'Gagal menghapus produk.')
+      return
+    }
     setProducts((prev) => prev.filter((p) => p.id !== id))
   }
 
@@ -87,6 +94,13 @@ export default function StockPage() {
           <h1 className="text-2xl font-bold text-gray-800">Stok Produk</h1>
           <button onClick={openAdd} className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Tambah Produk</button>
         </div>
+
+        {deleteError && (
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg flex justify-between items-center">
+            <span>{deleteError}</span>
+            <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 ml-4 font-bold">×</button>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <table className="w-full text-sm">
